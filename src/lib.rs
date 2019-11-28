@@ -246,7 +246,11 @@ pub mod admin {
         pub fn run(&mut self) -> Result <(), Box<dyn Error>> {
             println!("Bienvenue dans l'espace administrateur\n");
             loop {
-                print!("Que voulez vous faire ?\na: ajouter un mot\nr: enlever un mot\nq: sauver et quitter\n\nC'est a vous: ");
+                print!("Que voulez-vous faire ?\n\
+                        a: ajouter un mot\n\
+                        r: enlever un mot\n\
+                        q: sauver et quitter\n\n\
+                        C'est à vous: ");
                 io::stdout().flush()?;
                 let mut input = String::new();
                 io::stdin().read_line(&mut input)?;
