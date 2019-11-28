@@ -5,7 +5,7 @@ pub mod game {
     use std::io;
     use std::io::Write;
 
-    use rand::Rng;
+    use rand::seq::SliceRandom;
 
     pub struct Game {
         word: String,
@@ -22,16 +22,16 @@ pub mod game {
                 .map(|s| s.trim())
                 .filter(|s| !s.is_empty())
                 .collect();
-            if vec.is_empty() {
+            if let Some(&word) = vec.choose(&mut rand::thread_rng()) {
+                Ok(Game {
+                    word: word.into(),
+                    matched_letters: String::new(),
+                    unmatched_letters: String::new(),
+                    rem_errors: 6,
+                })
+            } else {
                 return Err(Box::new(DicoError("Le dictionnaire est vide !".into())));
             }
-            let index = rand::thread_rng().gen_range(0, vec.len()) as usize;
-            Ok(Game {
-                word: vec[index].to_string().to_uppercase(),
-                matched_letters: String::new(),
-                unmatched_letters: String::new(),
-                rem_errors: 6
-            })
         }
 
         fn display_word(&self) {
