@@ -1,11 +1,11 @@
 pub mod game {
-
-    use std::io;
-    use std::io::{Write};
-    use std::fs;
-    use rand::Rng;
     use std::error::Error;
     use std::fmt;
+    use std::fs;
+    use std::io;
+    use std::io::Write;
+
+    use rand::Rng;
 
     pub struct Game {
         word: String,
@@ -27,7 +27,7 @@ pub mod game {
             }
             let index = rand::thread_rng().gen_range(0, vec.len()) as usize;
             Ok(Game {
-                word: vec[index].to_string().to_ascii_uppercase(),
+                word: vec[index].to_string().to_uppercase(),
                 matched_letters: String::new(),
                 unmatched_letters: String::new(),
                 rem_errors: 6
@@ -49,13 +49,17 @@ pub mod game {
             io::stdout().flush()?;
             let mut input = String::new();
             io::stdin().read_line(&mut input)?;
-            input = input.trim().to_string();
-            if input.is_empty() || input.len() > 1 || !input.as_bytes()[0 as usize].is_ascii_alphabetic() {
-                println!("\"{}\" n'est pas une proposition correcte. Veuillez reessayer.\n", input);
-                print!("Entrez une lettre: ");
-                return Game::ask_letter();
+            let chars: Vec<char> = input.trim().chars().collect();
+            match &chars[..] {
+                &[c] if c.is_alphabetic() => {
+                    Ok(c.to_uppercase().next().unwrap_or(c))
+                },
+                _ => {
+                    println!("\"{}\" n'est pas une proposition correcte. Veuillez reessayer.\n", input);
+                    print!("Entrez une lettre: ");
+                    Game::ask_letter()
+                }
             }
-            Ok((input.as_bytes()[0].to_ascii_uppercase()) as char) 
         }
 
         fn check_letter(&mut self, letter: char) -> bool {
@@ -153,11 +157,10 @@ pub mod config {
 }
 
 pub mod admin {
-    
-    use std::io;
-    use std::io::{Write};
-    use std::fs;
     use std::error::Error;
+    use std::fs;
+    use std::io;
+    use std::io::Write;
 
     pub struct Admin {
         words : Vec<String>
@@ -170,7 +173,7 @@ pub mod admin {
             let split: Vec<&str> = dico.split(|c: char| c == '\n').collect();
             let mut words: Vec<String> = Vec::with_capacity(split.len());
             for s in split.iter() {
-                let word = s.trim().to_string().to_ascii_uppercase();
+                let word = s.trim().to_string().to_uppercase();
                 if !word.is_empty() {
                     words.push(word);
                 }
@@ -179,7 +182,7 @@ pub mod admin {
         }
 
         fn add(&mut self, word: &str) -> bool {
-            let new_word = word.to_string().trim().to_ascii_uppercase();
+            let new_word = word.to_string().trim().to_uppercase();
             for c in new_word.chars() {
                 if !c.is_alphabetic() {
                     println!("c = |{}|", c);
@@ -205,7 +208,7 @@ pub mod admin {
         }
 
         fn remove(&mut self, word: &str) -> bool {
-            let to_rem = word.to_string().trim().to_ascii_uppercase();
+            let to_rem = word.to_string().trim().to_uppercase();
             for (i, entry) in self.words.iter().enumerate() {
                 if entry == &to_rem {
                     self.words.remove(i);
@@ -254,7 +257,7 @@ pub mod admin {
                 io::stdout().flush()?;
                 let mut input = String::new();
                 io::stdin().read_line(&mut input)?;
-                let rq = input.trim().to_string().to_ascii_lowercase();
+                let rq = input.trim().to_string().to_lowercase();
                 match &rq[..] {
                     "a" => self.add_process()?,
                     "r" => self.remove_process()?,
