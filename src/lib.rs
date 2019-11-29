@@ -1,10 +1,12 @@
 use std::fs;
 use std::io::{BufRead, BufReader};
 
+const DICO_FILE: &str = "./Dictionnaire";
+
 /// Retourne un tableau avec les mots du dictionnaire.
 /// Si le dictionnaire n'existe pas, retourne un tableau vide
 fn load_words() -> Vec<String> {
-    if let Ok(dico) = fs::File::open("./Dictionnaire") {
+    if let Ok(dico) = fs::File::open(DICO_FILE) {
         BufReader::new(dico)
             .lines()
             .flatten()
@@ -165,7 +167,7 @@ pub mod admin {
     use std::io;
     use std::io::Write;
 
-    use crate::load_words;
+    use crate::{DICO_FILE, load_words};
 
     pub struct Admin {
         words: Vec<String>
@@ -231,14 +233,12 @@ pub mod admin {
         fn save(&mut self) -> Result<(), Box<dyn Error>> {
             self.words.sort();
             self.words.dedup();
-            let mut text = String::new();
-            for (i, entry) in self.words.iter().enumerate() {
-                if i > 0 {
-                    text.push_str("\n");
-                }
-                text.push_str(entry);
+            let mut file = fs::OpenOptions::new()
+                .write(true).create(true)
+                .open(DICO_FILE)?;
+            for word in self.words.iter() {
+                writeln!(file, "{}", word)?;
             }
-            fs::write("./Dictionnaire", &text.as_bytes())?;
             Ok(())
         }
 
