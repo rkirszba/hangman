@@ -1,5 +1,4 @@
 use std::env;
-use std::process;
 
 use hangman::admin::Admin;
 use hangman::config;
