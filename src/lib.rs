@@ -3,7 +3,7 @@ pub mod game {
     use std::fmt;
     use std::fs;
     use std::io;
-    use std::io::Write;
+    use std::io::{BufRead, BufReader, Write};
 
     use rand::seq::SliceRandom;
 
@@ -17,14 +17,15 @@ pub mod game {
     impl Game {
 
         pub fn new() -> Result<Self, Box<dyn Error>> {
-            let dico = fs::read_to_string("./Dictionnaire")?;
-            let vec: Vec<&str> = dico.split(|c: char| c == '\n')
-                .map(|s| s.trim())
+            let dico = fs::File::open("./Dictionnaire")?;
+            let vec: Vec<String> = BufReader::new(dico)
+                .lines()
+                .flatten()
                 .filter(|s| !s.is_empty())
                 .collect();
-            if let Some(&word) = vec.choose(&mut rand::thread_rng()) {
+            if let Some(word) = vec.choose(&mut rand::thread_rng()) {
                 Ok(Game {
-                    word: word.into(),
+                    word: word.trim().into(),
                     matched_letters: String::new(),
                     unmatched_letters: String::new(),
                     rem_errors: 6,
