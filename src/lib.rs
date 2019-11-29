@@ -179,16 +179,15 @@ pub mod admin {
             Ok(Admin { words })
         }
 
-        fn add(&mut self, word: &str) -> bool {
+        fn add(&mut self, word: &str) -> Result<(), char> {
             let new_word = word.to_string().trim().to_uppercase();
             for c in new_word.chars() {
                 if !c.is_alphabetic() {
-                    println!("c = |{}|", c);
-                    return false
+                    return Err(c)
                 }
             }
             self.words.push(new_word.to_string());
-            true
+            Ok(())
         }
 
         fn add_process(&mut self) -> Result<(), Box<dyn Error>> {
@@ -196,11 +195,12 @@ pub mod admin {
             io::stdout().flush()?;
             let mut input = String::new();
             io::stdin().read_line(&mut input)?;
-            if self.add(&input) {
-                println!("\n\"{}\" a bien ete ajoute au dictionnaire\n", input.trim());
-            }
-            else {
-                println!("\n\"{}\" n'est pas un mot valide\n", input.trim());
+            if let Err(c) = self.add(&input) {
+                println!("\n\"{word}\" n'est pas un mot valide car il contient le caractère '{invalid}'\n",
+                         word = input.trim(),
+                         invalid = c);
+            } else {
+                println!("\n\"{}\" a bien été ajouté au dictionnaire\n", input.trim());
             }
             Ok(())
         }
