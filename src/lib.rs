@@ -37,10 +37,7 @@ pub mod game {
         fn display_word(&self) {
             for (i, c) in self.word.chars().enumerate() {
                 if i > 0 { print!(" "); }
-                match c {
-                    c if self.matched_letters.contains(c) => print!("{}", c),
-                    _ => print!("_")
-                }
+                print!("{}", if self.matched_letters.contains(c) { c } else { '_' });
             }
             println!("\n");
         }
@@ -51,7 +48,8 @@ pub mod game {
             io::stdin().read_line(&mut input)?;
             input = input.trim().to_string();
             if input.is_empty() || input.len() > 1 || !input.as_bytes()[0 as usize].is_ascii_alphabetic() {
-                println!("\"{}\" n'est pas une proposition correcte. Veuillez reessayer.\n", input);
+                println!("\"{}\" n'est pas une proposition correcte. \
+                         Veuillez reessayer.\n", input);
                 print!("Entrez une lettre: ");
                 return Game::ask_letter();
             }
@@ -74,10 +72,7 @@ pub mod game {
 
         fn display_errors(&self) {
             for (i, c) in self.unmatched_letters.chars().enumerate() {
-                match i {
-                    0 => print!("{}", c),
-                    _ => print!(", {}", c)
-                }
+                print!("{}{}", if i > 0 { ", " } else { "" }, c);
             }
             println!("\n");
         }
@@ -155,7 +150,7 @@ pub mod config {
 pub mod admin {
     
     use std::io;
-    use std::io::{Write};
+    use std::io::Write;
     use std::fs;
     use std::error::Error;
 
@@ -178,11 +173,23 @@ pub mod admin {
             Ok(Admin {words})
         }
 
+        fn display_words(&self) {
+            if self.words.is_empty() {
+                println!("\nIl n'y a pour l'instant aucun mot dans le dictionnaire\n");
+            }
+            else {
+                println!("\nVoici les mots presents dans le dictionnaire");
+                for word in self.words.iter() {
+                    println!("{}", word);
+                }
+            }
+            println!("");
+        }
+
         fn add(&mut self, word: &str) -> bool {
             let new_word = word.to_string().trim().to_ascii_uppercase();
             for c in new_word.chars() {
                 if !c.is_alphabetic() {
-                    println!("c = |{}|", c);
                     return false
                 }
             }
@@ -232,26 +239,31 @@ pub mod admin {
         fn save(&mut self) -> Result<(), Box<dyn Error>> {
             self.words.sort();
             self.words.dedup();
-            let mut text = String::new();
-            for (i, entry) in self.words.iter().enumerate() {
-                if i > 0 {
-                    text.push_str("\n");
-                }
-                text.push_str(entry);
+            let mut file = fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .open("./Dictionnaire")?;
+            for entry in self.words.iter() {
+                writeln!(file, "{}", entry)?;
             }
-            fs::write("./Dictionnaire", &text.as_bytes())?;
             Ok(())
         }
 
         pub fn run(&mut self) -> Result <(), Box<dyn Error>> {
             println!("Bienvenue dans l'espace administrateur\n");
             loop {
-                print!("Que voulez vous faire ?\na: ajouter un mot\nr: enlever un mot\nq: sauver et quitter\n\nC'est a vous: ");
+                print!("Que voulez vous faire ?\n\
+                       d: afficher les mots\n\
+                       a: ajouter un mot\n\
+                       r: enlever un mot\n\
+                       q: sauver et quitter\n\n\
+                       C'est a vous: ");
                 io::stdout().flush()?;
                 let mut input = String::new();
                 io::stdin().read_line(&mut input)?;
                 let rq = input.trim().to_string().to_ascii_lowercase();
                 match &rq[..] {
+                    "d" => self.display_words(),
                     "a" => self.add_process()?,
                     "r" => self.remove_process()?,
                     "q" => { self.save()?; return Ok(()) },
