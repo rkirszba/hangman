@@ -73,10 +73,9 @@ pub mod game {
 
         fn display_errors(&self) {
             for (i, c) in self.unmatched_letters.chars().enumerate() {
-                match i {
-                    0 => print!("{}", c),
-                    _ => print!(", {}", c)
-                }
+                print!("{separator}{letter}",
+                       separator = if i == 0 { "" } else { ", " },
+                       letter = c);
             }
             println!("\n");
         }
