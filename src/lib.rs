@@ -1,31 +1,44 @@
+use std::fs;
+use std::io::{BufRead, BufReader};
+
+/// Retourne un tableau avec les mots du dictionnaire.
+/// Si le dictionnaire n'existe pas, retourne un tableau vide
+fn load_words() -> Vec<String> {
+    if let Ok(dico) = fs::File::open("./Dictionnaire") {
+        BufReader::new(dico)
+            .lines()
+            .flatten()
+            .map(|s| s.trim().to_uppercase().to_string())
+            .filter(|s| !s.is_empty())
+            .collect()
+    } else {
+        vec![]
+    }
+}
+
 pub mod game {
     use std::error::Error;
     use std::fmt;
-    use std::fs;
     use std::io;
-    use std::io::{BufRead, BufReader, Write};
+    use std::io::Write;
 
     use rand::seq::SliceRandom;
+
+    use crate::load_words;
 
     pub struct Game {
         word: String,
         matched_letters: String,
         unmatched_letters: String,
-        rem_errors: u32
+        rem_errors: u32,
     }
 
     impl Game {
 
         pub fn new() -> Result<Self, Box<dyn Error>> {
-            let dico = fs::File::open("./Dictionnaire")?;
-            let vec: Vec<String> = BufReader::new(dico)
-                .lines()
-                .flatten()
-                .filter(|s| !s.is_empty())
-                .collect();
-            if let Some(word) = vec.choose(&mut rand::thread_rng()) {
+            if let Some(word) = load_words().choose(&mut rand::thread_rng()) {
                 Ok(Game {
-                    word: word.trim().into(),
+                    word: word.into(),
                     matched_letters: String::new(),
                     unmatched_letters: String::new(),
                     rem_errors: 6,
@@ -152,23 +165,16 @@ pub mod admin {
     use std::io;
     use std::io::Write;
 
+    use crate::load_words;
+
     pub struct Admin {
-        words : Vec<String>
+        words: Vec<String>
     }
 
     impl Admin {
-            
         pub fn new() -> Result<Self, Box<dyn Error>> {
-            let dico = fs::read_to_string("./Dictionnaire")?;
-            let split: Vec<&str> = dico.split(|c: char| c == '\n').collect();
-            let mut words: Vec<String> = Vec::with_capacity(split.len());
-            for s in split.iter() {
-                let word = s.trim().to_string().to_uppercase();
-                if !word.is_empty() {
-                    words.push(word);
-                }
-            }
-            Ok(Admin {words})
+            let words = load_words();
+            Ok(Admin { words })
         }
 
         fn add(&mut self, word: &str) -> bool {
