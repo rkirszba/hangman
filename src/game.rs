@@ -1,11 +1,11 @@
 use std::error::Error;
-use std::fmt;
 use std::io;
 use std::io::Write;
 
 use rand::seq::SliceRandom;
 
 use crate::dico;
+use crate::dico::DicoError;
 
 pub struct Game {
     word: String,
@@ -15,8 +15,8 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new() -> Result<Self, Box<dyn Error>> {
-        if let Some(word) = dico::load_words().choose(&mut rand::thread_rng()) {
+    pub fn new() -> Result<Self, DicoError> {
+        if let Some(word) = dico::load_words()?.choose(&mut rand::thread_rng()) {
             Ok(Game {
                 word: word.into(),
                 matched_letters: String::new(),
@@ -24,7 +24,7 @@ impl Game {
                 rem_errors: 6,
             })
         } else {
-            Err(Box::new(DicoError("Le dictionnaire est vide !".into())))
+            Err(DicoError::Empty)
         }
     }
 
@@ -103,14 +103,3 @@ impl Game {
         }
     }
 }
-
-#[derive(Debug)]
-pub struct DicoError(String);
-
-impl fmt::Display for DicoError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl Error for DicoError {}

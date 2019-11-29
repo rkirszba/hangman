@@ -3,14 +3,15 @@ use std::io;
 use std::io::Write;
 
 use crate::dico;
+use crate::dico::DicoError;
 
 pub struct Admin {
     words: Vec<String>
 }
 
 impl Admin {
-    pub fn new() -> Result<Self, Box<dyn Error>> {
-        let words = dico::load_words();
+    pub fn new() -> Result<Self, DicoError> {
+        let words = dico::load_words()?;
         Ok(Admin { words })
     }
 
