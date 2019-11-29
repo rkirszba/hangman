@@ -15,6 +15,18 @@ impl Admin {
         Ok(Admin { words })
     }
 
+    fn display_words(&self) {
+        if self.words.is_empty() {
+            println!("\nIl n'y a pour l'instant aucun mot dans le dictionnaire\n");
+        } else {
+            println!("\nVoici les mots presents dans le dictionnaire");
+            for word in self.words.iter() {
+                println!("{}", word);
+            }
+        }
+        println!();
+    }
+
     fn add(&mut self, word: &str) -> Result<(), char> {
         let new_word = word.to_string().trim().to_uppercase();
         for c in new_word.chars() {
@@ -81,6 +93,7 @@ impl Admin {
         println!("Bienvenue dans l'espace administrateur\n");
         loop {
             print!("Que voulez-vous faire ?\n\
+                    d: afficher les mots\n\
                     a: ajouter un mot\n\
                     r: enlever un mot\n\
                     q: sauver et quitter\n\n\
@@ -90,6 +103,7 @@ impl Admin {
             io::stdin().read_line(&mut input)?;
             let rq = input.trim().to_string().to_lowercase();
             match &rq[..] {
+                "d" => self.display_words(),
                 "a" => self.add_process()?,
                 "r" => self.remove_process()?,
                 "q" => {
