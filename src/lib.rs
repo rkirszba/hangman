@@ -61,16 +61,13 @@ pub mod game {
         }
 
         fn check_letter(&mut self, letter: char) -> bool {
-            match letter {
-                letter if self.word.contains(letter) => {
-                    self.matched_letters.push(letter);
-                    true
-                }
-                _ => {
-                    self.unmatched_letters.push(letter);
-                    self.rem_errors -= 1;
-                    false
-                }
+            if self.word.contains(letter) {
+                self.matched_letters.push(letter);
+                true
+            } else {
+                self.unmatched_letters.push(letter);
+                self.rem_errors -= 1;
+                false
             }
         }
 
