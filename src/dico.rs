@@ -18,12 +18,13 @@ pub fn load_words() -> Result<Vec<String>, DicoError> {
 }
 
 /// Exporte les mots dans le fichier de dictionnaire
-pub fn save_words(words: &[String]) -> Result<(), Box<dyn Error>> {
+pub fn save_words(words: &[String]) -> Result<(), DicoError> {
     let mut file = fs::OpenOptions::new()
         .write(true).create(true)
-        .open(DICO_FILE)?;
+        .open(DICO_FILE)
+        .map_err(DicoError::IO)?;
     for word in words.iter() {
-        writeln!(file, "{}", word)?;
+        writeln!(file, "{}", word).map_err(DicoError::IO)?;
     }
     Ok(())
 }

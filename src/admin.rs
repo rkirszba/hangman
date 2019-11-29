@@ -77,7 +77,7 @@ impl Admin {
         Ok(())
     }
 
-    fn save(&mut self) -> Result<(), Box<dyn Error>> {
+    fn save(&mut self) -> Result<(), DicoError> {
         self.words.sort();
         self.words.dedup();
         dico::save_words(&self.words)
