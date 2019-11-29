@@ -31,7 +31,7 @@ pub mod game {
                     rem_errors: 6,
                 })
             } else {
-                return Err(Box::new(DicoError("Le dictionnaire est vide !".into())));
+                Err(Box::new(DicoError("Le dictionnaire est vide !".into())))
             }
         }
 
@@ -48,8 +48,8 @@ pub mod game {
             let mut input = String::new();
             io::stdin().read_line(&mut input)?;
             let chars: Vec<char> = input.trim().chars().collect();
-            match &chars[..] {
-                &[c] if c.is_alphabetic() => {
+            match chars[..] {
+                [c] if c.is_alphabetic() => {
                     Ok(c.to_uppercase().next().unwrap_or(c))
                 },
                 _ => {
