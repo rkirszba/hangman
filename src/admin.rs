@@ -1,125 +1,102 @@
-pub mod admin {
-    
-    use std::io;
-    use std::io::Write;
-    use std::fs;
-    use std::error::Error;
+use std::error::Error;
+use std::fs;
+use std::io;
+use std::io::Write;
 
-    pub struct Admin {
-        words : Vec<String>
+use crate::dico;
+
+pub struct Admin {
+    words: Vec<String>
+}
+
+impl Admin {
+    pub fn new() -> Result<Self, Box<dyn Error>> {
+        let words = dico::load_words();
+        Ok(Admin { words })
     }
 
-    impl Admin {
-            
-        pub fn new() -> Result<Self, Box<dyn Error>> {
-            let dico = fs::read_to_string("./Dictionnaire")?;
-            let split: Vec<&str> = dico.split(|c: char| c == '\n').collect();
-            let mut words: Vec<String> = Vec::with_capacity(split.len());
-            for s in split.iter() {
-                let word = s.trim().to_string().to_ascii_uppercase();
-                if !word.is_empty() {
-                    words.push(word);
-                }
+    fn add(&mut self, word: &str) -> Result<(), char> {
+        let new_word = word.to_string().trim().to_uppercase();
+        for c in new_word.chars() {
+            if !c.is_alphabetic() {
+                return Err(c);
             }
-            Ok(Admin {words})
         }
+        self.words.push(new_word.to_string());
+        Ok(())
+    }
 
-        fn display_words(&self) {
-            if self.words.is_empty() {
-                println!("\nIl n'y a pour l'instant aucun mot dans le dictionnaire\n");
-            }
-            else {
-                println!("\nVoici les mots presents dans le dictionnaire");
-                for word in self.words.iter() {
-                    println!("{}", word);
-                }
-            }
-            println!("");
+    fn add_process(&mut self) -> Result<(), Box<dyn Error>> {
+        println!("\nEntrez le mot que vous souhaitez ajouter: ");
+        io::stdout().flush()?;
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        if let Err(c) = self.add(&input) {
+            println!("\n\"{word}\" n'est pas un mot valide car il contient le caractère '{invalid}'\n",
+                     word = input.trim(),
+                     invalid = c);
+        } else {
+            println!("\n\"{}\" a bien été ajouté au dictionnaire\n", input.trim());
         }
+        Ok(())
+    }
 
-        fn add(&mut self, word: &str) -> bool {
-            let new_word = word.to_string().trim().to_ascii_uppercase();
-            for c in new_word.chars() {
-                if !c.is_alphabetic() {
-                    return false
-                }
+    fn remove(&mut self, word: &str) -> bool {
+        let to_rem = word.to_string().trim().to_uppercase();
+        for (i, entry) in self.words.iter().enumerate() {
+            if entry == &to_rem {
+                self.words.remove(i);
+                return true;
             }
-            self.words.push(new_word.to_string());
-            true
         }
+        false
+    }
 
-        fn add_process(&mut self) -> Result<(), Box<dyn Error>> {
-            println!("\nEntrez le mot que vous souhaitez ajouter: ");
+    fn remove_process(&mut self) -> Result<(), Box<dyn Error>> {
+        println!("\nEntrez le mot que vous souhaitez supprimer: ");
+        io::stdout().flush()?;
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        if self.remove(&input) {
+            println!("\n\"{}\" a bien ete retire du dictionnaire\n", input.trim());
+        } else {
+            println!("\n\"{}\" ne fait pas partie du dictionnaire\n", input.trim());
+        }
+        Ok(())
+    }
+
+    fn save(&mut self) -> Result<(), Box<dyn Error>> {
+        self.words.sort();
+        self.words.dedup();
+        let mut file = fs::OpenOptions::new()
+            .write(true).create(true)
+            .open(dico::DICO_FILE)?;
+        for word in self.words.iter() {
+            writeln!(file, "{}", word)?;
+        }
+        Ok(())
+    }
+
+    pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
+        println!("Bienvenue dans l'espace administrateur\n");
+        loop {
+            print!("Que voulez-vous faire ?\n\
+                    a: ajouter un mot\n\
+                    r: enlever un mot\n\
+                    q: sauver et quitter\n\n\
+                    C'est à vous: ");
             io::stdout().flush()?;
             let mut input = String::new();
             io::stdin().read_line(&mut input)?;
-            if self.add(&input) {
-                println!("\n\"{}\" a bien ete ajoute au dictionnaire\n", input.trim());
-            }
-            else {
-                println!("\n\"{}\" n'est pas un mot valide\n", input.trim());
-            }
-            Ok(())
-        }
-
-        fn remove(&mut self, word: &str) -> bool {
-            let to_rem = word.to_string().trim().to_ascii_uppercase();
-            for (i, entry) in self.words.iter().enumerate() {
-                if entry == &to_rem {
-                    self.words.remove(i);
-                    return true;
+            let rq = input.trim().to_string().to_lowercase();
+            match &rq[..] {
+                "a" => self.add_process()?,
+                "r" => self.remove_process()?,
+                "q" => {
+                    self.save()?;
+                    return Ok(());
                 }
-            }
-            false
-        }
-
-        fn remove_process(&mut self) -> Result<(), Box<dyn Error>> {
-            println!("\nEntrez le mot que vous souhaitez supprimer: ");
-            io::stdout().flush()?;
-            let mut input = String::new();
-            io::stdin().read_line(&mut input)?;
-            if self.remove(&input) {
-                println!("\n\"{}\" a bien ete retire du dictionnaire\n", input.trim());
-            }
-            else {
-                println!("\n\"{}\" ne fait pas partie du dictionnaire\n", input.trim());
-            }
-            Ok(())
-        }
-
-        fn save(&mut self) -> Result<(), Box<dyn Error>> {
-            self.words.sort();
-            self.words.dedup();
-            let mut file = fs::OpenOptions::new()
-                .write(true)
-                .create(true)
-                .open("./Dictionnaire")?;
-            for entry in self.words.iter() {
-                writeln!(file, "{}", entry)?;
-            }
-            Ok(())
-        }
-
-        pub fn run(&mut self) -> Result <(), Box<dyn Error>> {
-            println!("Bienvenue dans l'espace administrateur\n");
-            loop {
-                print!("Que voulez vous faire ?\n\
-                       d: afficher les mots\n\
-                       a: ajouter un mot\n\
-                       r: enlever un mot\n\
-                       q: sauver et quitter\n\n\
-                       C'est a vous: ");
-                io::stdout().flush()?;
-                let mut input = String::new();
-                io::stdin().read_line(&mut input)?;
-                let rq = input.trim().to_string().to_ascii_lowercase();
-                match &rq[..] {
-                    "d" => self.display_words(),
-                    "a" => self.add_process()?,
-                    "r" => self.remove_process()?,
-                    "q" => { self.save()?; return Ok(()) },
-                    _ => println!("\"{}\" n'est pas une option correcte\n", rq)
-                }
+                _ => println!("\"{}\" n'est pas une option correcte\n", rq)
             }
         }
     }
