@@ -53,7 +53,8 @@ pub mod game {
                     Ok(c.to_uppercase().next().unwrap_or(c))
                 },
                 _ => {
-                    println!("\"{}\" n'est pas une proposition correcte. Veuillez reessayer.\n", input);
+                    println!("\"{}\" n'est pas une proposition correcte. \
+                    Veuillez réessayer.\n", input.trim());
                     print!("Entrez une lettre: ");
                     Game::ask_letter()
                 }
