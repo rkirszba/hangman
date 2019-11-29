@@ -1,1 +1,1 @@
-/Users/rkirszba/hangman/target/debug/hangman: /Users/rkirszba/hangman/src/lib.rs /Users/rkirszba/hangman/src/main.rs
+/Users/rkirszba/hangman/target/debug/hangman: /Users/rkirszba/hangman/src/admin.rs /Users/rkirszba/hangman/src/config.rs /Users/rkirszba/hangman/src/game.rs /Users/rkirszba/hangman/src/lib.rs /Users/rkirszba/hangman/src/main.rs

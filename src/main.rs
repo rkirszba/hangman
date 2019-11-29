@@ -1,8 +1,8 @@
 use std::env;
 use std::error::Error;
-use hangman::game::Game;
-use hangman::admin::Admin;
-use hangman::config;
+use hangman::game::game::Game;
+use hangman::admin::admin::Admin;
+use hangman::config::config;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
