@@ -81,12 +81,7 @@ pub mod game {
         }
 
         fn check_success(&self) -> bool {
-            for c in self.word.chars() {
-                if !self.matched_letters.contains(c) {
-                    return false;
-                }
-            }
-            true
+            self.word.chars().all(|c| self.matched_letters.contains(c))
         }
 
         pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
