@@ -1,5 +1,4 @@
 use std::error::Error;
-use std::fs;
 use std::io;
 use std::io::Write;
 
@@ -80,13 +79,7 @@ impl Admin {
     fn save(&mut self) -> Result<(), Box<dyn Error>> {
         self.words.sort();
         self.words.dedup();
-        let mut file = fs::OpenOptions::new()
-            .write(true).create(true)
-            .open(dico::DICO_FILE)?;
-        for word in self.words.iter() {
-            writeln!(file, "{}", word)?;
-        }
-        Ok(())
+        dico::save_words(&self.words)
     }
 
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
