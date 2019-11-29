@@ -38,10 +38,7 @@ pub mod game {
         fn display_word(&self) {
             for (i, c) in self.word.chars().enumerate() {
                 if i > 0 { print!(" "); }
-                match c {
-                    c if self.matched_letters.contains(c) => print!("{}", c),
-                    _ => print!("_")
-                }
+                print!("{}", if self.matched_letters.contains(c) { c } else { '_' });
             }
             println!("\n");
         }
