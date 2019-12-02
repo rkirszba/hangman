@@ -21,10 +21,9 @@ pub fn load_words() -> Result<Vec<String>, DicoError> {
 pub fn save_words(words: &[String]) -> Result<(), DicoError> {
     let mut file = fs::OpenOptions::new()
         .write(true).create(true)
-        .open(DICO_FILE)
-        .map_err(DicoError::IO)?;
+        .open(DICO_FILE)?;
     for word in words.iter() {
-        writeln!(file, "{}", word).map_err(DicoError::IO)?;
+        writeln!(file, "{}", word)?;
     }
     Ok(())
 }
@@ -50,6 +49,12 @@ impl fmt::Display for DicoError {
 impl fmt::Debug for DicoError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "DicoError: {}", self)
+    }
+}
+
+impl From<std::io::Error> for DicoError {
+    fn from(source: std::io::Error) -> Self {
+        DicoError::IO(source)
     }
 }
 
